@@ -1,11 +1,17 @@
 import random
 import math
 import pandas as pd
+import numpy as np
 
 #########-------------KNOWN ISSUES-------------------############
 #1. Only one option for splits at the moment
 #2. No option for how long you want to spend in the gym
 #3. generate_routine function just chooses 3 compounds movements and 2 accessory movements right now
+
+######------------THINGS TO ADD-----------------###########
+#1. Add in ab workouts
+#2. Add in arms as accessory workouts - e.g., chest day has triceps
+
 
 #User choices
 workout_days_per_week = 5
@@ -32,9 +38,9 @@ def generate_routine(muscle_group):
         t_list_bicep = []
         for index, value in enumerate(column):
             if "TRICEP" in str(value).upper():
-                t_list_tricep.append(df.iloc[index,1]) 
+                t_list_tricep.append(df.iloc[index,2]) 
             elif "BICEP" in str(value).upper():
-                t_list_bicep.append(df.iloc[index,1])
+                t_list_bicep.append(df.iloc[index,2])
         tricep_list = random.sample(t_list_tricep,3)
         bicep_list = random.sample(t_list_bicep, 3)
         return [item for pair in zip(tricep_list, bicep_list) for item in pair]
@@ -43,12 +49,44 @@ def generate_routine(muscle_group):
     #that match the muscle_group key
     for index, value in enumerate(column):
         if muscle_group in str(value).upper():
-            if "STRENGTH" in str(df.iloc[index,7]).upper():
-                t_list_strength.append(df.iloc[index,1])
+            if "STRENGTH" in str(df.iloc[index,9]).upper():
+                t_list_strength.append(df.iloc[index,2])
             else:
-                t_list_acc.append(df.iloc[index,1])
+                t_list_acc.append(df.iloc[index,2])
+    
+    #Pick random exercises
     str_list = random.sample(t_list_strength, 3) #Choose 3 random compound movements
     acc_list = random.sample(t_list_acc, 2) #Choose 2 random accessory movements
+
+    #Sanity check to prevent too many lunge variations
+    if muscle_group == "LEGS":
+        #Load the exercise types from the Excel sheet
+        exercise_types = df.iloc[:, 1].values
+        
+        #Add the strength and accessory lists together
+        t_list = str_list + acc_list
+        
+        #Run a while loop until there is <= 1 lunge variation
+        more_than_one_lunge_BOOL = True
+        while more_than_one_lunge_BOOL:
+            #Create new list to store the movement groups
+            movement_group_list = []
+            #Store all names of exercises from Excel
+            exercise_names = df.iloc[:,2]
+            #Find the row for each exercise in the selected exercises
+            for value in t_list:
+                row = np.where(exercise_names == value)[0]
+                movement_group_list.append(df.iloc[row[0], 1])
+            #Sum the number of times 'Lunge' occurs
+            int = movement_group_list.count("Lunge")
+            #If 'Lunge' occurs less than 2 times, then exist the while,
+            #otherwise, reroll the exercises.
+            if int < 2:
+                more_than_one_lunge_BOOL = False
+            else:
+                str_list = random.sample(t_list_strength, 3) #Choose 3 random compound movements
+                acc_list = random.sample(t_list_acc, 2) #Choose 2 random accessory movements
+                t_list = str_list + acc_list
      
     #return the compound and accessory movements lists combined
     return str_list + acc_list
@@ -88,6 +126,7 @@ def generate_rep_scheme(t_list):
 #-------------------MAIN-----------------
 #legs, shoulders, back, chest, arms.
 if split_selection == 1:
+    print("You've rolled the 5-Day Rotation Split!")
     split_list = ["LEGS", "SHOULDERS", "BACK", "CHEST", "ARMS"]
 
 for value in split_list:
