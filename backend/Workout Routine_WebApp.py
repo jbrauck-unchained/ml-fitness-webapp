@@ -2,6 +2,7 @@ import random
 import math
 import pandas as pd
 import numpy as np
+import os
 
 #########-------------KNOWN ISSUES-------------------############
 #1. Only one option for splits at the moment
