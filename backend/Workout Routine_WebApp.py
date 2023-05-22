@@ -23,7 +23,7 @@ split_selection = 1 #Don't have options. Will make #1 be legs, shoulders, back, 
 #Given a muscle group, generate a workout plan for that day
 def generate_routine(muscle_group):
     #Import data for excercises
-    df = pd.read_excel(r'Exercise_List.xlsx')
+    df = pd.read_excel(os.path.join(os.getcwd(), 'backend','Exercise_List.xlsx'))
     #Load first column (muscle group)
     column = df.iloc[:, 0].values
     
